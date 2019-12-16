@@ -1,6 +1,6 @@
 "use strict";
 
-(function() {
+(function () {
   // Returns a random DNA base
   const returnRandBase = () => {
     const dnaBases = ["A", "T", "C", "G"];
@@ -16,41 +16,72 @@
     return newStrand;
   };
 
-  const pAequorFactory = (num, array) => {
+  const pAequorFactory = (specimenNum, dna) => {
     return {
-      specimenNum: num,
-      dna: array,
+      specimenNum,
+      dna,
       mutate() {
-        const randIndex = Math.floor(Math.random() * 15);
-        let diffBase = returnRandBase();
-        while (this.dna[randIndex] === diffBase) {
-          diffBase = returnRandBase();
-          continue;
+        const randIndex = Math.floor(Math.random() * this.dna.length);
+        let newBase = returnRandBase();
+        while (this.dna[randIndex] === newBase) {
+          newBase = returnRandBase();
         }
-        this.dna[randIndex] = diffBase;
+        this.dna[randIndex] = newBase;
         return this.dna;
       },
       compareDNA(object) {
-        let counter = 0;
+        let similarities = 0;
         for (let i = 0; i < this.dna.length; i++) {
           if (this.dna[i] === object.dna[i]) {
-            counter++;
+            similarities++;
           }
         }
-        console.log(
-          `Specimen ${this.specimenNum} and specimen ${
-            object.specimenNum
-          } have ${(
-            (counter / this.dna.length) *
-            100
-          ).toFixed()}% DNA in common.`
-        );
+        console.log(`Specimen ${this.specimenNum} and specimen 
+        ${object.specimenNum} have ${((similarities / this.dna.length) * 100).
+            toFixed()}% DNA in common.`);
       },
-      willLikelySurvive() {}
+      willLikelySurvive() {
+        const survivalRate = this.dna.filter(base => base === "C" ||
+          base === "G");
+        return (survivalRate.length / this.dna.length) * 100 >= 60;
+      },
+      complementStrand() {
+        const complStrand = [];
+        this.dna.forEach(base => {
+          start:
+          switch (base) {
+            case 'A':
+              complStrand.push('T');
+              break start;
+            case 'T':
+              complStrand.push('A');
+              break start;
+            case 'C':
+              complStrand.push('G');
+              break start;
+            case 'G':
+              complStrand.push('C');
+              break start;
+          }
+        });
+        return complStrand;
+      }
     };
   };
 
+  const createSpecimenArray = () => {
+    const specimenArray = [];
+    for (let i = 1; i <= 30; i++) {
+      let pAequor = pAequorFactory(i, mockUpStrand());
+      if (pAequor.willLikelySurvive()) {
+        specimenArray.push(pAequor);
+      }
+    }
+    return specimenArray;
+  };
+
   const pAequor = pAequorFactory(1, mockUpStrand());
-  const pAequor2 = pAequorFactory(2, mockUpStrand());
-  pAequor.compareDNA(pAequor2);
+  createSpecimenArray();
+  console.log(pAequor.dna);
+  console.log(pAequor.complementStrand());
 })();
